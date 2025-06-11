@@ -9,6 +9,30 @@ function ensureOwnersSheet(ss) {
   }
 }
 
+// Completely (re)create the Owners sheet with some sample data
+function initializeOwnersSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Owners');
+  if (sheet) {
+    sheet.clear();
+  } else {
+    sheet = ss.insertSheet('Owners');
+  }
+
+  const headers = ['Owner', 'Email', 'First Name', 'Last Name'];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+
+  const data = [
+    ['Justin', '', 'Justin', ''],
+    ['PWA', '', 'PWA', ''],
+    ['Naokimi', '', 'Naokimi', '']
+  ];
+
+  sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
+  sheet.autoResizeColumns(1, headers.length);
+}
+
 function sendReminders() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const projectSheet = ss.getSheetByName('Project Tracking');
