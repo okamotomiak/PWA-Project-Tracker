@@ -319,3 +319,100 @@ function addProjectTrackingSheetToExisting() {
 function testRecreateSheet() {
   recreateProjectTrackingSheet();
 }
+
+function createRecurringTasksSheet() {
+  const spreadsheet = SpreadsheetApp.create('Recurring Tasks - Copy');
+  const sheet = spreadsheet.getActiveSheet();
+
+  sheet.setName('Recurring Tasks');
+
+  const headers = [
+    'Task Name',
+    'Frequency',
+    'Day/Pattern',
+    'Next Due Date',
+    'Owner',
+    'Status',
+    'Last Completed Date',
+    'Notes'
+  ];
+
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  const data = [
+    [
+      'Send Weekly Newsletter',
+      'Weekly',
+      'Monday',
+      new Date('6/10/2025'),
+      'Justin',
+      'Not Started',
+      new Date('6/03/2025'),
+      ''
+    ],
+    [
+      'Monthly Planning Meeting',
+      'Monthly',
+      '3rd Thursday',
+      new Date('6/20/2025'),
+      'PWA',
+      'Not Started',
+      new Date('5/23/2025'),
+      ''
+    ]
+  ];
+
+  sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
+
+  formatRecurringTasksSheet(sheet, data.length + 1);
+
+  sheet.autoResizeColumns(1, headers.length);
+  console.log('New Recurring Tasks sheet created: ' + spreadsheet.getUrl());
+
+  return spreadsheet;
+}
+
+function formatRecurringTasksSheet(sheet, totalRows) {
+  const headerRange = sheet.getRange(1, 1, 1, 8);
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#e6f3ff');
+
+  const statusRange = sheet.getRange(2, 6, totalRows - 1, 1);
+  const statusValues = statusRange.getValues();
+
+  for (let i = 0; i < statusValues.length; i++) {
+    const status = statusValues[i][0];
+    const cellRange = sheet.getRange(i + 2, 6);
+
+    switch (status) {
+      case 'Done':
+        cellRange.setBackground('#e8f5e8').setFontColor('#2e7d32');
+        break;
+      case 'In Progres':
+        cellRange.setBackground('#fff3e0').setFontColor('#ef6c00');
+        break;
+      case 'Not Started':
+        cellRange.setBackground('#ffebee').setFontColor('#c62828');
+        break;
+    }
+  }
+
+  const nextDueRange = sheet.getRange(2, 4, totalRows - 1, 1);
+  nextDueRange.setNumberFormat('m/d/yyyy');
+
+  const lastCompletedRange = sheet.getRange(2, 7, totalRows - 1, 1);
+  lastCompletedRange.setNumberFormat('m/d/yyyy');
+
+  const notesRange = sheet.getRange(2, 8, totalRows - 1, 1);
+  notesRange.setWrap(true);
+
+  const dataRange = sheet.getRange(1, 1, totalRows, 8);
+  dataRange.setBorder(true, true, true, true, true, true);
+
+  sheet.setFrozenRows(1);
+  sheet.setRowHeights(2, totalRows - 1, 40);
+}
+
+function testRecreateRecurringSheet() {
+  createRecurringTasksSheet();
+}
