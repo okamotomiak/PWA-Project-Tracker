@@ -7,7 +7,11 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Project Management')
     .addItem('Add New Project', 'openAddProjectDialog')
+    .addItem('Send Reminders', 'sendReminders')
     .addToUi();
+
+  // Ensure the Owners sheet exists
+  ensureOwnersSheet();
 }
 
 function openAddProjectDialog() {
