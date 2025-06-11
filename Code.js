@@ -317,9 +317,9 @@ function formatProjectTrackingSheet(sheet, totalRows) {
   sheet.setRowHeights(2, totalRows - 1, 60);
 }
 
-// Alternative function to create sheet in existing spreadsheet
-// This function is redundant given the resolved recreateProjectTrackingSheet.
-// It is kept for completeness if you intended to have two distinct functions.
+// This function is redundant given the resolved recreateProjectTrackingSheet,
+// but is kept here if you intended to have two distinct functions for different
+// creation behaviors.
 function addProjectTrackingSheetToExisting() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = spreadsheet.insertSheet('Project Tracking');
@@ -338,9 +338,8 @@ function addProjectTrackingSheetToExisting() {
   
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   
-  // The rest of the data and formatting code would be the same as in recreateProjectTrackingSheet,
-  // but it's not duplicated here for brevity. You would call formatProjectTrackingSheet
-  // and set the data here too.
+  // The rest of the data and formatting code would be the same as in recreateProjectTrackingSheet.
+  // You would call formatProjectTrackingSheet and set the data here too.
   
   console.log('Project Tracking sheet added to current spreadsheet');
 }
@@ -348,4 +347,142 @@ function addProjectTrackingSheetToExisting() {
 // Function to test the script
 function testRecreateSheet() {
   recreateProjectTrackingSheet();
+}
+
+---
+
+## New `createRecurringTasksSheet` Function
+
+This new function will create a "Recurring Tasks" sheet with its own headers, data, and formatting.
+
+```javascript
+function createRecurringTasksSheet() {
+  // Create or clear the "Recurring Tasks" sheet in the active spreadsheet
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName('Recurring Tasks');
+  if (sheet) {
+    // If the sheet exists, clear its content to refresh it.
+    sheet.clear();
+  } else {
+    // If the sheet doesn't exist, create it.
+    sheet = spreadsheet.insertSheet('Recurring Tasks');
+  }
+
+  // Set the sheet name (important if it was newly inserted or previously existed)
+  sheet.setName('Recurring Tasks');
+
+  const headers = [
+    'Task Name',
+    'Frequency',
+    'Day/Pattern',
+    'Next Due Date',
+    'Owner',
+    'Status',
+    'Last Completed Date',
+    'Notes'
+  ];
+
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  const data = [
+    [
+      'Send Weekly Newsletter',
+      'Weekly',
+      'Monday',
+      new Date('6/10/2025'),
+      'Justin',
+      'Not Started',
+      new Date('6/03/2025'),
+      ''
+    ],
+    [
+      'Monthly Planning Meeting',
+      'Monthly',
+      '3rd Thursday',
+      new Date('6/20/2025'),
+      'PWA',
+      'Not Started',
+      new Date('5/23/2025'),
+      ''
+    ]
+  ];
+
+  sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
+
+  formatRecurringTasksSheet(sheet, data.length + 1);
+
+  sheet.autoResizeColumns(1, headers.length);
+  console.log('Recurring Tasks sheet created in current spreadsheet');
+
+  return spreadsheet;
+}
+
+function formatRecurringTasksSheet(sheet, totalRows) {
+  const headerRange = sheet.getRange(1, 1, 1, 8);
+  headerRange.setFontWeight('bold');
+  headerRange.setBackground('#e6f3ff');
+
+  const statusRange = sheet.getRange(2, 6, totalRows - 1, 1);
+  const statusValues = statusRange.getValues();
+
+  for (let i = 0; i < statusValues.length; i++) {
+    const status = statusValues[i][0];
+    const cellRange = sheet.getRange(i + 2, 6);
+
+    switch (status) {
+      case 'Done':
+        cellRange.setBackground('#e8f5e8').setFontColor('#2e7d32');
+        break;
+      case 'In Progres':
+        cellRange.setBackground('#fff3e0').setFontColor('#ef6c00');
+        break;
+      case 'Not Started':
+        cellRange.setBackground('#ffebee').setFontColor('#c62828');
+        break;
+    }
+  }
+
+  const nextDueRange = sheet.getRange(2, 4, totalRows - 1, 1);
+  nextDueRange.setNumberFormat('m/d/yyyy');
+
+  const lastCompletedRange = sheet.getRange(2, 7, totalRows - 1, 1);
+  lastCompletedRange.setNumberFormat('m/d/yyyy');
+
+  const notesRange = sheet.getRange(2, 8, totalRows - 1, 1);
+  notesRange.setWrap(true);
+
+  const dataRange = sheet.getRange(1, 1, totalRows, 8);
+  dataRange.setBorder(true, true, true, true, true, true);
+
+  sheet.setFrozenRows(1);
+  sheet.setRowHeights(2, totalRows - 1, 40);
+}
+
+function testRecreateRecurringSheet() {
+  createRecurringTasksSheet();
+}
+
+---
+
+## `initializeAllSheets` Function
+
+This function will call both `recreateProjectTrackingSheet` and `createRecurringTasksSheet`, providing a single entry point to set up your entire spreadsheet. I've also added a placeholder for `ensureOwnersSheet()` since it was referenced, though its content isn't provided here. You'll need to define that function.
+
+```javascript
+// Create all required sheets in the active spreadsheet
+function initializeAllSheets() {
+  recreateProjectTrackingSheet();
+  createRecurringTasksSheet();
+  // Placeholder for ensureOwnersSheet. You'll need to define this function.
+  // Example:
+  // function ensureOwnersSheet() {
+  //   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  //   let ownerSheet = spreadsheet.getSheetByName('Owners');
+  //   if (!ownerSheet) {
+  //     ownerSheet = spreadsheet.insertSheet('Owners');
+  //     ownerSheet.getRange(1, 1).setValue('Owner Name');
+  //     // Add more setup for the Owners sheet if needed
+  //   }
+  // }
+  console.log('All required sheets initialized.');
 }
