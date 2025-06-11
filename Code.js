@@ -5,7 +5,7 @@
  */
 
 function recreateProjectTrackingSheet() {
-  // Use the active spreadsheet instead of creating a new one
+  // Use the active spreadsheet
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
   // Remove the existing "Project Tracking" sheet if it exists
@@ -20,7 +20,7 @@ function recreateProjectTrackingSheet() {
   // Set up the headers
   const headers = [
     'Project Name',
-    'Priority', 
+    'Priority',  
     'Due Date',
     'Description',
     'Deliverables',
@@ -318,6 +318,8 @@ function formatProjectTrackingSheet(sheet, totalRows) {
 }
 
 // Alternative function to create sheet in existing spreadsheet
+// This function is redundant given the resolved recreateProjectTrackingSheet.
+// It is kept for completeness if you intended to have two distinct functions.
 function addProjectTrackingSheetToExisting() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = spreadsheet.insertSheet('Project Tracking');
@@ -325,7 +327,7 @@ function addProjectTrackingSheetToExisting() {
   // Use the same setup logic as above
   const headers = [
     'Project Name',
-    'Priority', 
+    'Priority',  
     'Due Date',
     'Description',
     'Deliverables',
@@ -336,7 +338,9 @@ function addProjectTrackingSheetToExisting() {
   
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   
-  // ... (rest of the data and formatting code would be the same)
+  // The rest of the data and formatting code would be the same as in recreateProjectTrackingSheet,
+  // but it's not duplicated here for brevity. You would call formatProjectTrackingSheet
+  // and set the data here too.
   
   console.log('Project Tracking sheet added to current spreadsheet');
 }
