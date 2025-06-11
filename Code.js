@@ -1,15 +1,21 @@
 /**
  * AppScript to recreate the Project Tracking Google Sheet
- * This script creates a new spreadsheet with the exact structure and data
+ * This script rebuilds the "Project Tracking" sheet within the
+ * active spreadsheet using the exact structure and data.
  */
 
 function recreateProjectTrackingSheet() {
-  // Create a new spreadsheet
-  const spreadsheet = SpreadsheetApp.create('Project Tracking - Copy');
-  const sheet = spreadsheet.getActiveSheet();
-  
-  // Rename the sheet to "Project Tracking"
-  sheet.setName('Project Tracking');
+  // Use the active spreadsheet instead of creating a new one
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Remove the existing "Project Tracking" sheet if it exists
+  let sheet = spreadsheet.getSheetByName('Project Tracking');
+  if (sheet) {
+    spreadsheet.deleteSheet(sheet);
+  }
+
+  // Create a fresh "Project Tracking" sheet
+  sheet = spreadsheet.insertSheet('Project Tracking');
   
   // Set up the headers
   const headers = [
@@ -207,6 +213,29 @@ function recreateProjectTrackingSheet() {
   
   // Add data starting from row 2
   sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
+
+  // Add dropdowns for Priority, Owner, and Status columns
+  const priorityOptions = ['High', 'Medium', 'Low'];
+  const ownerOptions = ['Justin', 'PWA', 'Naokimi', 'Other'];
+  const statusOptions = ['Not Started', 'In Progres', 'Done'];
+
+  sheet.getRange(2, 2, data.length, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation()
+      .requireValueInList(priorityOptions, true)
+      .build()
+  );
+
+  sheet.getRange(2, 6, data.length, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation()
+      .requireValueInList(ownerOptions, true)
+      .build()
+  );
+
+  sheet.getRange(2, 7, data.length, 1).setDataValidation(
+    SpreadsheetApp.newDataValidation()
+      .requireValueInList(statusOptions, true)
+      .build()
+  );
   
   // Format the sheet
   formatProjectTrackingSheet(sheet, data.length + 1);
@@ -214,10 +243,10 @@ function recreateProjectTrackingSheet() {
   // Auto-resize columns
   sheet.autoResizeColumns(1, headers.length);
   
-  // Log the URL of the new spreadsheet
-  console.log('New Project Tracking sheet created: ' + spreadsheet.getUrl());
-  
-  return spreadsheet;
+  // Log the URL of the current spreadsheet
+  console.log('Project Tracking sheet recreated in: ' + spreadsheet.getUrl());
+
+  return sheet;
 }
 
 function formatProjectTrackingSheet(sheet, totalRows) {
