@@ -215,7 +215,10 @@ function recreateProjectTrackingSheet() {
   
   // Add data starting from row 2
   sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
-  
+
+  // Apply dropdown validations
+  applyProjectTrackingValidations(sheet);
+
   // Format the sheet
   formatProjectTrackingSheet(sheet, data.length + 1);
   
@@ -294,6 +297,31 @@ function formatProjectTrackingSheet(sheet, totalRows) {
   
   // Set row heights for better readability
   sheet.setRowHeights(2, totalRows - 1, 60);
+}
+
+// Add dropdown validations for the Project Tracking sheet
+function applyProjectTrackingValidations(sheet) {
+  const ss = sheet.getParent();
+  const maxRows = sheet.getMaxRows() - 1;
+
+  const priorityRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['High', 'Medium', 'Low'], true)
+    .build();
+  sheet.getRange(2, 2, maxRows, 1).setDataValidation(priorityRule);
+
+  const statusRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Not Started', 'In Progres', 'Done'], true)
+    .build();
+  sheet.getRange(2, 7, maxRows, 1).setDataValidation(statusRule);
+
+  const ownersSheet = ss.getSheetByName('Owners');
+  if (ownersSheet) {
+    const ownerRange = ownersSheet.getRange('A2:A');
+    const ownerRule = SpreadsheetApp.newDataValidation()
+      .requireValueInRange(ownerRange, true)
+      .build();
+    sheet.getRange(2, 6, maxRows, 1).setDataValidation(ownerRule);
+  }
 }
 
 // Alternative function to create sheet in existing spreadsheet
@@ -375,6 +403,9 @@ function createRecurringTasksSheet() {
 
   sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
 
+  // Apply dropdown validations
+  applyRecurringTasksValidations(sheet);
+
   formatRecurringTasksSheet(sheet, data.length + 1);
 
   sheet.autoResizeColumns(1, headers.length);
@@ -424,6 +455,26 @@ function formatRecurringTasksSheet(sheet, totalRows) {
   sheet.setRowHeights(2, totalRows - 1, 40);
 }
 
+// Add dropdown validations for the Recurring Tasks sheet
+function applyRecurringTasksValidations(sheet) {
+  const ss = sheet.getParent();
+  const maxRows = sheet.getMaxRows() - 1;
+
+  const statusRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Not Started', 'In Progres', 'Done'], true)
+    .build();
+  sheet.getRange(2, 6, maxRows, 1).setDataValidation(statusRule);
+
+  const ownersSheet = ss.getSheetByName('Owners');
+  if (ownersSheet) {
+    const ownerRange = ownersSheet.getRange('A2:A');
+    const ownerRule = SpreadsheetApp.newDataValidation()
+      .requireValueInRange(ownerRange, true)
+      .build();
+    sheet.getRange(2, 5, maxRows, 1).setDataValidation(ownerRule);
+  }
+}
+
 function testRecreateRecurringSheet() {
   createRecurringTasksSheet();
 }
@@ -432,5 +483,5 @@ function testRecreateRecurringSheet() {
 function initializeAllSheets() {
   recreateProjectTrackingSheet();
   createRecurringTasksSheet();
-  ensureOwnersSheet();
+  initializeOwnersSheet();
 }
