@@ -4,7 +4,7 @@ This repository contains Google Apps Script code for managing project and task t
 
 ## Scripts
 
-- **recreateProjectTrackingSheet** – generates a "Project Tracking" spreadsheet with sample data.
-- **createRecurringTasksSheet** – generates a "Recurring Tasks" spreadsheet for scheduling tasks that repeat on a weekly or monthly basis.
+- **recreateProjectTrackingSheet** – creates or refreshes a "Project Tracking" sheet in the active spreadsheet with sample data.
+- **createRecurringTasksSheet** – creates or refreshes a "Recurring Tasks" sheet for scheduling repeating tasks in the active spreadsheet.
 
-Each script creates a new spreadsheet and formats the sheet with headers, example rows, and color-coded statuses.
+Each script formats the sheet with headers, example rows, and color-coded statuses without generating a separate file.

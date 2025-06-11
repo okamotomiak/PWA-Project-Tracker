@@ -4,9 +4,14 @@
  */
 
 function recreateProjectTrackingSheet() {
-  // Create a new spreadsheet
-  const spreadsheet = SpreadsheetApp.create('Project Tracking - Copy');
-  const sheet = spreadsheet.getActiveSheet();
+  // Use the active spreadsheet instead of creating a new file
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName('Project Tracking');
+  if (sheet) {
+    sheet.clear();
+  } else {
+    sheet = spreadsheet.insertSheet('Project Tracking');
+  }
 
   // Ensure Owners sheet exists in the new spreadsheet
   ensureOwnersSheet(spreadsheet);
@@ -217,8 +222,8 @@ function recreateProjectTrackingSheet() {
   // Auto-resize columns
   sheet.autoResizeColumns(1, headers.length);
   
-  // Log the URL of the new spreadsheet
-  console.log('New Project Tracking sheet created: ' + spreadsheet.getUrl());
+  // Log completion
+  console.log('Project Tracking sheet created in current spreadsheet');
   
   return spreadsheet;
 }
@@ -321,8 +326,14 @@ function testRecreateSheet() {
 }
 
 function createRecurringTasksSheet() {
-  const spreadsheet = SpreadsheetApp.create('Recurring Tasks - Copy');
-  const sheet = spreadsheet.getActiveSheet();
+  // Create or clear the "Recurring Tasks" sheet in the active spreadsheet
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName('Recurring Tasks');
+  if (sheet) {
+    sheet.clear();
+  } else {
+    sheet = spreadsheet.insertSheet('Recurring Tasks');
+  }
 
   sheet.setName('Recurring Tasks');
 
@@ -367,7 +378,7 @@ function createRecurringTasksSheet() {
   formatRecurringTasksSheet(sheet, data.length + 1);
 
   sheet.autoResizeColumns(1, headers.length);
-  console.log('New Recurring Tasks sheet created: ' + spreadsheet.getUrl());
+  console.log('Recurring Tasks sheet created in current spreadsheet');
 
   return spreadsheet;
 }
