@@ -7,6 +7,9 @@ function recreateProjectTrackingSheet() {
   // Create a new spreadsheet
   const spreadsheet = SpreadsheetApp.create('Project Tracking - Copy');
   const sheet = spreadsheet.getActiveSheet();
+
+  // Ensure Owners sheet exists in the new spreadsheet
+  ensureOwnersSheet(spreadsheet);
   
   // Rename the sheet to "Project Tracking"
   sheet.setName('Project Tracking');
