@@ -1,28 +1,26 @@
 /**
  * AppScript to recreate the Project Tracking Google Sheet
- * This script creates a new spreadsheet with the exact structure and data
+ * This script rebuilds the "Project Tracking" sheet within the
+ * active spreadsheet using the exact structure and data.
  */
 
 function recreateProjectTrackingSheet() {
-  // Use the active spreadsheet instead of creating a new file
+  // Use the active spreadsheet
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Remove the existing "Project Tracking" sheet if it exists
   let sheet = spreadsheet.getSheetByName('Project Tracking');
   if (sheet) {
-    sheet.clear();
-  } else {
-    sheet = spreadsheet.insertSheet('Project Tracking');
+    spreadsheet.deleteSheet(sheet);
   }
 
-  // Ensure Owners sheet exists in the new spreadsheet
-  ensureOwnersSheet(spreadsheet);
-  
-  // Rename the sheet to "Project Tracking"
-  sheet.setName('Project Tracking');
+  // Create a fresh "Project Tracking" sheet
+  sheet = spreadsheet.insertSheet('Project Tracking');
   
   // Set up the headers
   const headers = [
     'Project Name',
-    'Priority', 
+    'Priority',  
     'Due Date',
     'Description',
     'Deliverables',
@@ -225,10 +223,10 @@ function recreateProjectTrackingSheet() {
   // Auto-resize columns
   sheet.autoResizeColumns(1, headers.length);
   
-  // Log completion
-  console.log('Project Tracking sheet created in current spreadsheet');
-  
-  return spreadsheet;
+  // Log the URL of the current spreadsheet
+  console.log('Project Tracking sheet recreated in: ' + spreadsheet.getUrl());
+
+  return sheet;
 }
 
 function formatProjectTrackingSheet(sheet, totalRows) {
@@ -302,29 +300,53 @@ function formatProjectTrackingSheet(sheet, totalRows) {
 // Add dropdown validations for the Project Tracking sheet
 function applyProjectTrackingValidations(sheet) {
   const ss = sheet.getParent();
-  const maxRows = sheet.getMaxRows() - 1;
+  const maxRows = sheet.getMaxRows(); // Use getMaxRows() for the full column range
 
   const priorityRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(['High', 'Medium', 'Low'], true)
     .build();
-  sheet.getRange(2, 2, maxRows, 1).setDataValidation(priorityRule);
+  // Apply to column B, from row 2 to the maximum number of rows in the sheet
+  sheet.getRange(2, 2, maxRows - 1, 1).setDataValidation(priorityRule);
 
   const statusRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(['Not Started', 'In Progres', 'Done'], true)
     .build();
-  sheet.getRange(2, 7, maxRows, 1).setDataValidation(statusRule);
+  // Apply to column G, from row 2 to the maximum number of rows in the sheet
+  sheet.getRange(2, 7, maxRows - 1, 1).setDataValidation(statusRule);
 
+  // Get owners from the 'Owners' sheet
   const ownersSheet = ss.getSheetByName('Owners');
   if (ownersSheet) {
-    const ownerRange = ownersSheet.getRange('A2:A');
-    const ownerRule = SpreadsheetApp.newDataValidation()
-      .requireValueInRange(ownerRange, true)
+    // Get all non-empty values from column A in the 'Owners' sheet, starting from A2
+    const ownerValues = ownersSheet.getRange('A2:A')
+                                   .getValues()
+                                   .filter(String)
+                                   .map(row => row[0]);
+    
+    // Only apply if there are actual owners listed
+    if (ownerValues.length > 0) {
+      const ownerRule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(ownerValues, true) // Use requireValueInList for dynamic list
+        .build();
+      // Apply to column F, from row 2 to the maximum number of rows in the sheet
+      sheet.getRange(2, 6, maxRows - 1, 1).setDataValidation(ownerRule);
+    } else {
+      console.warn("No owners found in the 'Owners' sheet (column A). Owner dropdown not applied.");
+    }
+  } else {
+    console.warn("The 'Owners' sheet does not exist. Owner dropdown not applied.");
+    // Fallback if 'Owners' sheet doesn't exist, use hardcoded list
+    const ownerOptionsFallback = ['Justin', 'PWA', 'Naokimi', 'Other'];
+    const ownerRuleFallback = SpreadsheetApp.newDataValidation()
+      .requireValueInList(ownerOptionsFallback, true)
       .build();
-    sheet.getRange(2, 6, maxRows, 1).setDataValidation(ownerRule);
+    sheet.getRange(2, 6, maxRows - 1, 1).setDataValidation(ownerRuleFallback);
   }
 }
 
-// Alternative function to create sheet in existing spreadsheet
+// This function is redundant given the resolved recreateProjectTrackingSheet,
+// but is kept here if you intended to have two distinct functions for different
+// creation behaviors.
 function addProjectTrackingSheetToExisting() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = spreadsheet.insertSheet('Project Tracking');
@@ -332,7 +354,7 @@ function addProjectTrackingSheetToExisting() {
   // Use the same setup logic as above
   const headers = [
     'Project Name',
-    'Priority', 
+    'Priority',  
     'Due Date',
     'Description',
     'Deliverables',
@@ -343,7 +365,8 @@ function addProjectTrackingSheetToExisting() {
   
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   
-  // ... (rest of the data and formatting code would be the same)
+  // The rest of the data and formatting code would be the same as in recreateProjectTrackingSheet.
+  // You would call formatProjectTrackingSheet and set the data here too.
   
   console.log('Project Tracking sheet added to current spreadsheet');
 }
@@ -353,16 +376,24 @@ function testRecreateSheet() {
   recreateProjectTrackingSheet();
 }
 
+---
+
+## `createRecurringTasksSheet` Function
+
+```javascript
 function createRecurringTasksSheet() {
   // Create or clear the "Recurring Tasks" sheet in the active spreadsheet
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = spreadsheet.getSheetByName('Recurring Tasks');
   if (sheet) {
+    // If the sheet exists, clear its content to refresh it.
     sheet.clear();
   } else {
+    // If the sheet doesn't exist, create it.
     sheet = spreadsheet.insertSheet('Recurring Tasks');
   }
 
+  // Set the sheet name (important if it was newly inserted or previously existed)
   sheet.setName('Recurring Tasks');
 
   const headers = [
@@ -458,20 +489,35 @@ function formatRecurringTasksSheet(sheet, totalRows) {
 // Add dropdown validations for the Recurring Tasks sheet
 function applyRecurringTasksValidations(sheet) {
   const ss = sheet.getParent();
-  const maxRows = sheet.getMaxRows() - 1;
+  const maxRows = sheet.getMaxRows();
 
   const statusRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(['Not Started', 'In Progres', 'Done'], true)
     .build();
-  sheet.getRange(2, 6, maxRows, 1).setDataValidation(statusRule);
+  sheet.getRange(2, 6, maxRows - 1, 1).setDataValidation(statusRule);
 
   const ownersSheet = ss.getSheetByName('Owners');
   if (ownersSheet) {
-    const ownerRange = ownersSheet.getRange('A2:A');
-    const ownerRule = SpreadsheetApp.newDataValidation()
-      .requireValueInRange(ownerRange, true)
+    const ownerValues = ownersSheet.getRange('A2:A')
+                                   .getValues()
+                                   .filter(String)
+                                   .map(row => row[0]);
+    if (ownerValues.length > 0) {
+      const ownerRule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(ownerValues, true)
+        .build();
+      sheet.getRange(2, 5, maxRows - 1, 1).setDataValidation(ownerRule);
+    } else {
+      console.warn("No owners found in the 'Owners' sheet (column A). Owner dropdown not applied for Recurring Tasks.");
+    }
+  } else {
+    console.warn("The 'Owners' sheet does not exist. Owner dropdown not applied for Recurring Tasks.");
+    // Fallback if 'Owners' sheet doesn't exist, use hardcoded list
+    const ownerOptionsFallback = ['Justin', 'PWA', 'Naokimi', 'Other'];
+    const ownerRuleFallback = SpreadsheetApp.newDataValidation()
+      .requireValueInList(ownerOptionsFallback, true)
       .build();
-    sheet.getRange(2, 5, maxRows, 1).setDataValidation(ownerRule);
+    sheet.getRange(2, 5, maxRows - 1, 1).setDataValidation(ownerRuleFallback);
   }
 }
 
@@ -479,9 +525,54 @@ function testRecreateRecurringSheet() {
   createRecurringTasksSheet();
 }
 
+---
+
+## `initializeOwnersSheet` Function (New) and `initializeAllSheets`
+
+You need a function to create and populate your `Owners` sheet. This function will be called by `initializeAllSheets`.
+
+```javascript
+function initializeOwnersSheet() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName('Owners');
+
+  if (sheet) {
+    sheet.clear(); // Clear existing content if sheet already exists
+  } else {
+    sheet = spreadsheet.insertSheet('Owners');
+  }
+  sheet.setName('Owners');
+
+  // Set up headers for the Owners sheet
+  const headers = ['Owner Name'];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1).setFontWeight('bold');
+  sheet.getRange(1, 1).setBackground('#e6f3ff');
+
+  // Example data for Owners
+  const ownersData = [
+    ['Justin'],
+    ['PWA'],
+    ['Naokimi'],
+    ['Other'] // Include 'Other' if it's a valid option
+  ];
+
+  if (ownersData.length > 0) {
+    sheet.getRange(2, 1, ownersData.length, 1).setValues(ownersData);
+  }
+
+  sheet.autoResizeColumn(1); // Auto-resize the 'Owner Name' column
+  sheet.setFrozenRows(1); // Freeze the header row
+
+  console.log('Owners sheet initialized.');
+  return sheet;
+}
+
 // Create all required sheets in the active spreadsheet
 function initializeAllSheets() {
+  // Ensure Owners sheet is created/initialized first, as other sheets depend on it for dropdowns
+  initializeOwnersSheet();
   recreateProjectTrackingSheet();
   createRecurringTasksSheet();
-  initializeOwnersSheet();
+  console.log('All required sheets initialized.');
 }
