@@ -427,3 +427,10 @@ function formatRecurringTasksSheet(sheet, totalRows) {
 function testRecreateRecurringSheet() {
   createRecurringTasksSheet();
 }
+
+// Create all required sheets in the active spreadsheet
+function initializeAllSheets() {
+  recreateProjectTrackingSheet();
+  createRecurringTasksSheet();
+  ensureOwnersSheet();
+}

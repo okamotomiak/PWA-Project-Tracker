@@ -8,6 +8,7 @@ function onOpen() {
   ui.createMenu('Project Management')
     .addItem('Add New Project', 'openAddProjectDialog')
     .addItem('Send Reminders', 'sendReminders')
+    .addItem('Initialize Sheets', 'initializeAllSheets')
     .addToUi();
 
   // Ensure the Owners sheet exists
