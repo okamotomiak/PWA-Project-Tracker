@@ -101,7 +101,13 @@ function formatNewProjectRow(sheet, rowNumber, priority, status) {
   
   // Format Due Date column
   const dueDateCell = sheet.getRange(rowNumber, 3);
-  dueDateCell.setNumberFormat('m/d/yyyy');
+  try {
+    dueDateCell.setNumberFormat('m/d/yyyy');
+  } catch (e) {
+    // If the Due Date column is a typed column, setting the number format can
+    // throw a ScriptError. We simply skip formatting in that case.
+    console.warn('Unable to set number format for Due Date column:', e);
+  }
   
   // Set text wrapping for Description, Deliverables, and Notes columns
   const descriptionCell = sheet.getRange(rowNumber, 4);
