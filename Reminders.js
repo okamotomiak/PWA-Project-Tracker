@@ -115,4 +115,9 @@ function formatOwnersSheet(sheet) {
     sheet.setRowHeights(2, lastRow - 1, 30);
   }
   sheet.autoResizeColumns(1, lastColumn);
+  // Improve column widths for readability
+  var widths = [140, 220, 140, 140];
+  for (var i = 0; i < widths.length && i < lastColumn; i++) {
+    sheet.setColumnWidth(i + 1, widths[i]);
+  }
 }

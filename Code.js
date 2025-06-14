@@ -108,9 +108,9 @@ function createRecurringTasksSheet() {
     sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
   }
 
-  formatRecurringTasksSheet(sheet);
   applyDataValidations(sheet, 'Recurring Tasks');
   sheet.autoResizeColumns(1, headers.length);
+  formatRecurringTasksSheet(sheet);
   sheet.setFrozenRows(1);
   console.log('Recurring Tasks sheet created in current spreadsheet');
 }
@@ -191,6 +191,13 @@ function formatRecurringTasksSheet(sheet) {
   }
 
   sheet.getRange(1, 1, lastRow, lastColumn).createFilter();
+
+  // Auto size then adjust column widths
+  sheet.autoResizeColumns(1, lastColumn);
+  var widths = [200, 100, 130, 120, 120, 120, 140, 250];
+  for (var i = 0; i < widths.length && i < lastColumn; i++) {
+    sheet.setColumnWidth(i + 1, widths[i]);
+  }
 }
 
 
