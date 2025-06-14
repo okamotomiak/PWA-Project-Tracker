@@ -1,21 +1,54 @@
 /**
  * @OnlyCurrentDoc
- *
- * The above comment directs App Script to limit the scope of execution
- * to the current spreadsheet only. This is a good practice for security
- * and performance.
  */
+
+// =================================================================
+// MAIN SETUP FUNCTIONS
+// =================================================================
 
 /**
  * Main function to initialize all necessary sheets.
- * This function acts as the primary entry point for setting up the spreadsheet.
  */
 function initializeAllSheets() {
-  initializeOwnersSheet();
+  initializeOwnersSheet(); // This was missing, now re-added
   recreateProjectTrackingSheet();
   createRecurringTasksSheet();
   SpreadsheetApp.getUi().alert('All sheets have been successfully initialized!');
   console.log('All required sheets initialized.');
+}
+
+/**
+ * Creates and populates the 'Owners' sheet with sample data.
+ */
+function initializeOwnersSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetName = 'Owners';
+  let sheet = ss.getSheetByName(sheetName);
+  if (sheet) {
+    sheet.clear();
+  } else {
+    sheet = ss.insertSheet(sheetName);
+  }
+
+  const headers = ['Owner', 'Email', 'First Name', 'Last Name'];
+  const headerRange = sheet.getRange(1, 1, 1, headers.length);
+  headerRange.setValues([headers])
+             .setFontWeight('bold')
+             .setBackground('#e6f3ff');
+
+  const data = [
+    ['Justin', 'justin@example.com', 'Justin', ''],
+    ['PWA', 'pwa@example.com', 'PWA', ''],
+    ['Naokimi', 'naokimi@example.com', 'Naokimi', '']
+  ];
+
+  if (data.length > 0) {
+    sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
+  }
+  
+  sheet.setFrozenRows(1);
+  sheet.autoResizeColumns(1, headers.length);
+  console.log('Owners sheet initialized.');
 }
 
 /**
@@ -31,7 +64,6 @@ function recreateProjectTrackingSheet() {
   }
   sheet = spreadsheet.insertSheet(sheetName);
 
-  // Set up headers
   const headers = [
     'Project Name', 'Priority', 'Due Date', 'Description',
     'Deliverables', 'Owner', 'Status', 'Notes'
@@ -41,7 +73,6 @@ function recreateProjectTrackingSheet() {
              .setFontWeight('bold')
              .setBackground('#e6f3ff');
 
-  // Define data for the sheet
   const data = [
     ['PSWM - Resource Promotion', 'Medium', new Date('2025-06-04'), 'Highlight PSWM resources on website and engage non-attendees', '', 'Justin', 'Done', ''],
     ['Discourse Series - Marketing', 'High', new Date('2025-06-04'), 'Slides, newsletter, announcements, registration form with Zoom reminders', 'Slides\nnewsletter\nannouncements\nregistration form with Zoom reminders', 'PWA', 'Done', ''],
@@ -61,7 +92,6 @@ function recreateProjectTrackingSheet() {
     ['Heavenly Fortune Review', 'Medium', '', 'Review course content and impact', '', 'Naokimi', 'Done', ''],
     ['NE Leadership Summit Prep', 'High', new Date('2025-06-20'), 'Plan agenda and content for Leadership Summit\nFriday day Belvedere TC\nNight - Tudor\nSat - NYC\nAfternoon youth event', '- Event Sheet filled out\n- Budget\n- Catering is planned\n- Location is secured', 'PWA', 'Not Started', '']
   ];
-
 
   if (data.length > 0) {
     sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
@@ -88,7 +118,6 @@ function createRecurringTasksSheet() {
     sheet.clear();
   }
 
-  // Set up headers
   const headers = [
     'Task Name', 'Frequency', 'Day/Pattern', 'Next Due Date',
     'Owner', 'Status', 'Last Completed Date', 'Notes'
@@ -98,7 +127,6 @@ function createRecurringTasksSheet() {
              .setFontWeight('bold')
              .setBackground('#e6f3ff');
 
-  // Define data for the sheet
   const data = [
     ['Send Weekly Newsletter', 'Weekly', 'Monday', new Date('2025-06-10'), 'Justin', 'Not Started', new Date('2025-06-03'), ''],
     ['Monthly Planning Meeting', 'Monthly', '3rd Thursday', new Date('2025-06-20'), 'PWA', 'Not Started', new Date('2025-05-23'), '']
@@ -108,20 +136,21 @@ function createRecurringTasksSheet() {
     sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
   }
 
-  formatRecurringTasksSheet(sheet);
   applyDataValidations(sheet, 'Recurring Tasks');
-  sheet.autoResizeColumns(1, headers.length);
-  sheet.setFrozenRows(1);
+  formatRecurringTasksSheet(sheet); // Format function now handles all aesthetics
   console.log('Recurring Tasks sheet created in current spreadsheet');
 }
 
+// =================================================================
+// FORMATTING AND VALIDATION
+// =================================================================
+
 /**
  * Applies conditional formatting to the "Project Tracking" sheet.
- * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet The sheet to format.
  */
 function formatProjectTrackingSheet(sheet) {
   const numRows = sheet.getLastRow() - 1;
-  if (numRows <= 0) return; // No data to format
+  if (numRows <= 0) return;
 
   const rules = [
     { range: sheet.getRange(2, 2, numRows, 1), colors: { 'High': '#ffebee', 'Medium': '#fff3e0', 'Low': '#e8f5e8' } },
@@ -140,8 +169,7 @@ function formatProjectTrackingSheet(sheet) {
     sheet.setConditionalFormatRules(sheet.getConditionalFormatRules().concat(conditionalFormatRules));
   });
 
-  // Apply other formatting
-  sheet.getRange(2, 3, numRows, 1).setNumberFormat('m/d/yyyy');
+  // Apply other formatting - REMOVED setNumberFormat
   sheet.getRange(2, 4, numRows, 2).setWrap(true); // Description and Deliverables
   sheet.getRange(2, 8, numRows, 1).setWrap(true); // Notes
   sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).setBorder(true, true, true, true, true, true);
@@ -149,55 +177,59 @@ function formatProjectTrackingSheet(sheet) {
 }
 
 /**
- * Applies conditional formatting to the "Recurring Tasks" sheet.
- * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet The sheet to format.
+ * Applies conditional formatting and other styles to the "Recurring Tasks" sheet.
  */
 function formatRecurringTasksSheet(sheet) {
   const lastRow = sheet.getLastRow();
   const lastColumn = sheet.getLastColumn();
   const numRows = lastRow - 1;
-  if (numRows <= 0) return;
 
+  if (numRows <= 0) return; // Exit if no data rows
+
+  // --- 1. Conditional Formatting Rules ---
   const statusRange = sheet.getRange(2, 6, numRows, 1);
   const dueDateRange = sheet.getRange(2, 4, numRows, 1);
   const rules = [
+    // Status Rules
     SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('Done').setBackground('#e8f5e8').setRanges([statusRange]).build(),
     SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('In Progress').setBackground('#fff3e0').setRanges([statusRange]).build(),
     SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('Not Started').setBackground('#ffebee').setRanges([statusRange]).build(),
-    SpreadsheetApp.newConditionalFormatRule().whenDateBefore(SpreadsheetApp.RelativeDate.YESTERDAY).setBackground('#ffcccc').setRanges([dueDateRange]).build()
+    // Overdue Rule for 'Next Due Date'
+    SpreadsheetApp.newConditionalFormatRule().whenDateBefore(SpreadsheetApp.RelativeDate.TODAY).setBackground('#ffcccc').setRanges([dueDateRange]).build()
   ];
   sheet.setConditionalFormatRules(rules);
-  
-  // Apply other formatting
-  sheet.getRange(1, 1, 1, lastColumn)
-       .setFontColor('#1a73e8')
-       .setFontSize(12)
-       .setFontWeight('bold');
 
-  sheet.setFrozenColumns(1);
+  // --- 2. Data Body Formatting ---
+  // Apply alternating row colors (banding)
+  sheet.getBandings().forEach(b => b.remove());
+  sheet.getRange(2, 1, numRows, lastColumn).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY);
 
-  sheet.getRange(2, 4, numRows, 1).setNumberFormat('m/d/yyyy'); // Next Due Date
-  sheet.getRange(2, 7, numRows, 1).setNumberFormat('m/d/yyyy'); // Last Completed
-  sheet.getRange(2, 8, numRows, 1).setWrap(true); // Notes
+  // Set standard row height and wrap text in the 'Notes' column
+  sheet.setRowHeights(2, numRows, 40);
+  sheet.getRange(2, 8, numRows, 1).setWrap(true);
 
+  // --- 3. Sheet-Wide Formatting ---
+  // Add borders to the entire data range
   sheet.getRange(1, 1, lastRow, lastColumn).setBorder(true, true, true, true, true, true);
-  if (numRows > 0) {
-    sheet.setRowHeights(2, numRows, 40);
-  }
-
-  sheet.getBandings().forEach(function(b) { b.remove(); });
-  if (numRows > 0) {
-    sheet.getRange(2, 1, numRows, lastColumn).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY);
-  }
-
+  
+  // Freeze the first column and header row
+  sheet.setFrozenColumns(1);
+  sheet.setFrozenRows(1);
+  
+  // Create a filter for the entire data range
   sheet.getRange(1, 1, lastRow, lastColumn).createFilter();
-}
 
+  // --- 4. Column Widths (Resolved Merge Conflict) ---
+  // Auto-resize columns first, then set specific widths for readability
+  sheet.autoResizeColumns(1, lastColumn);
+  const widths = [200, 100, 130, 120, 120, 120, 140, 250];
+  for (let i = 0; i < widths.length && i < lastColumn; i++) {
+    sheet.setColumnWidth(i + 1, widths[i]);
+  }
+}
 
 /**
  * Applies data validation rules to a sheet.
- * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet The sheet to apply validations to.
- * @param {string} sheetType The type of sheet ('Project Tracking' or 'Recurring Tasks').
  */
 function applyDataValidations(sheet, sheetType) {
   const maxRows = sheet.getMaxRows();
