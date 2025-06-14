@@ -6,6 +6,7 @@ function ensureOwnersSheet(ss) {
     const headers = ['Owner', 'Email', 'First Name', 'Last Name'];
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+    formatOwnersSheet(sheet);
   }
 }
 
@@ -30,7 +31,7 @@ function initializeOwnersSheet() {
   ];
 
   sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
-  sheet.autoResizeColumns(1, headers.length);
+  formatOwnersSheet(sheet);
 }
 
 function sendReminders() {
@@ -78,4 +79,45 @@ function sendReminders() {
   });
 
   SpreadsheetApp.getUi().alert('Reminders sent.');
+}
+
+/**
+ * Applies consistent formatting to the Owners sheet for better readability.
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet The Owners sheet.
+ */
+function formatOwnersSheet(sheet) {
+  const lastColumn = sheet.getLastColumn();
+  const lastRow = sheet.getLastRow();
+
+  // Style header row
+  sheet.getRange(1, 1, 1, lastColumn)
+       .setBackground('#e6f3ff')
+       .setFontWeight('bold')
+       .setFontColor('#1a73e8')
+       .setFontSize(12);
+
+  // Freeze header row
+  sheet.setFrozenRows(1);
+
+  // Remove existing banding and apply new light grey banding
+  sheet.getBandings().forEach(function(b) { b.remove(); });
+  if (lastRow > 1) {
+    sheet.getRange(2, 1, lastRow - 1, lastColumn)
+         .applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY);
+  }
+
+  // Add borders
+  sheet.getRange(1, 1, Math.max(lastRow, 1), lastColumn)
+       .setBorder(true, true, true, true, true, true);
+
+  // Standard row height and auto size columns
+  if (lastRow > 0) {
+    sheet.setRowHeights(2, lastRow - 1, 30);
+  }
+  sheet.autoResizeColumns(1, lastColumn);
+  // Improve column widths for readability
+  var widths = [140, 220, 140, 140];
+  for (var i = 0; i < widths.length && i < lastColumn; i++) {
+    sheet.setColumnWidth(i + 1, widths[i]);
+  }
 }

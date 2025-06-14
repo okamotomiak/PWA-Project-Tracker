@@ -108,9 +108,9 @@ function createRecurringTasksSheet() {
     sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
   }
 
-  formatRecurringTasksSheet(sheet);
   applyDataValidations(sheet, 'Recurring Tasks');
   sheet.autoResizeColumns(1, headers.length);
+  formatRecurringTasksSheet(sheet);
   sheet.setFrozenRows(1);
   console.log('Recurring Tasks sheet created in current spreadsheet');
 }
@@ -153,23 +153,51 @@ function formatProjectTrackingSheet(sheet) {
  * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet The sheet to format.
  */
 function formatRecurringTasksSheet(sheet) {
-  const numRows = sheet.getLastRow() - 1;
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  const numRows = lastRow - 1;
   if (numRows <= 0) return;
 
   const statusRange = sheet.getRange(2, 6, numRows, 1);
+  const dueDateRange = sheet.getRange(2, 4, numRows, 1);
   const rules = [
     SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('Done').setBackground('#e8f5e8').setRanges([statusRange]).build(),
     SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('In Progress').setBackground('#fff3e0').setRanges([statusRange]).build(),
-    SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('Not Started').setBackground('#ffebee').setRanges([statusRange]).build()
+    SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('Not Started').setBackground('#ffebee').setRanges([statusRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule().whenDateBefore(SpreadsheetApp.RelativeDate.YESTERDAY).setBackground('#ffcccc').setRanges([dueDateRange]).build()
   ];
   sheet.setConditionalFormatRules(rules);
   
   // Apply other formatting
+  sheet.getRange(1, 1, 1, lastColumn)
+       .setFontColor('#1a73e8')
+       .setFontSize(12)
+       .setFontWeight('bold');
+
+  sheet.setFrozenColumns(1);
+
   sheet.getRange(2, 4, numRows, 1).setNumberFormat('m/d/yyyy'); // Next Due Date
   sheet.getRange(2, 7, numRows, 1).setNumberFormat('m/d/yyyy'); // Last Completed
   sheet.getRange(2, 8, numRows, 1).setWrap(true); // Notes
-  sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).setBorder(true, true, true, true, true, true);
-  sheet.setRowHeights(2, numRows, 40);
+
+  sheet.getRange(1, 1, lastRow, lastColumn).setBorder(true, true, true, true, true, true);
+  if (numRows > 0) {
+    sheet.setRowHeights(2, numRows, 40);
+  }
+
+  sheet.getBandings().forEach(function(b) { b.remove(); });
+  if (numRows > 0) {
+    sheet.getRange(2, 1, numRows, lastColumn).applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY);
+  }
+
+  sheet.getRange(1, 1, lastRow, lastColumn).createFilter();
+
+  // Auto size then adjust column widths
+  sheet.autoResizeColumns(1, lastColumn);
+  var widths = [200, 100, 130, 120, 120, 120, 140, 250];
+  for (var i = 0; i < widths.length && i < lastColumn; i++) {
+    sheet.setColumnWidth(i + 1, widths[i]);
+  }
 }
 
 
