@@ -133,10 +133,22 @@ function formatNewProjectRow(sheet, rowNumber, priority, status) {
 }
 
 function getDropdownOptions() {
-  // Return the dropdown options for the form
+  // Fetch dropdown options for the form
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ownersSheet = ss.getSheetByName('Owners');
+  let ownerValues = ['Justin', 'PWA', 'Naokimi', 'Other']; // Fallback list
+
+  if (ownersSheet) {
+    const values = ownersSheet.getRange('A2:A').getValues();
+    const owners = values.flat().filter(String);
+    if (owners.length > 0) {
+      ownerValues = owners;
+    }
+  }
+
   return {
     priorities: ['High', 'Medium', 'Low'],
-    owners: ['Justin', 'PWA', 'Naokimi', 'Other'],
+    owners: ownerValues,
     statuses: ['Not Started', 'In Progres', 'Done']
   };
 }

@@ -231,10 +231,6 @@
             <label for="owner">Owner <span class="required">*</span></label>
             <select id="owner" name="owner" required>
               <option value="">Select Owner</option>
-              <option value="Justin">Justin</option>
-              <option value="PWA">PWA</option>
-              <option value="Naokimi">Naokimi</option>
-              <option value="Other">Other</option>
             </select>
           </div>
         </div>
@@ -274,6 +270,21 @@
     document.getElementById('projectForm').addEventListener('submit', function(e) {
       e.preventDefault();
       submitProject();
+    });
+
+    // Populate Owner dropdown from the server
+    document.addEventListener('DOMContentLoaded', function() {
+      google.script.run.withSuccessHandler(function(options) {
+        const ownerSelect = document.getElementById('owner');
+        if (options && options.owners) {
+          options.owners.forEach(function(name) {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            ownerSelect.appendChild(opt);
+          });
+        }
+      }).getDropdownOptions();
     });
     
     // Add visual feedback for priority and status changes
