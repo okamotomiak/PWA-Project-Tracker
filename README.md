@@ -7,7 +7,7 @@ This repository contains Google Apps Script code for managing project and task t
 - **recreateProjectTrackingSheet** – creates or refreshes a "Project Tracking" sheet in the active spreadsheet with sample data.
 - **createRecurringTasksSheet** – creates or refreshes a "Recurring Tasks" sheet for scheduling repeating tasks in the active spreadsheet.
 - **initializeAllSheets** – sets up the Project Tracking, Recurring Tasks, and Owners sheets in the active spreadsheet.
-- **initializeOwnersSheet** – recreates the Owners sheet with example data and header formatting.
+- **initializeOwnersSheet** – recreates the Owners sheet with `Owner`, `Email`, `First Name`, and `Last Name` columns.
 
 All creation scripts now apply data validation drop-downs. Priority and Status columns use predefined lists while Owner selections reference the **Owners** sheet.
 

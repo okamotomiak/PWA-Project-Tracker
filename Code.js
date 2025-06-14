@@ -19,45 +19,6 @@ function initializeAllSheets() {
 }
 
 /**
- * Creates and populates the 'Owners' sheet.
- * This sheet serves as the source for the owner dropdowns in other sheets.
- */
-function initializeOwnersSheet() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const sheetName = 'Owners';
-  let sheet = spreadsheet.getSheetByName(sheetName);
-
-  if (!sheet) {
-    sheet = spreadsheet.insertSheet(sheetName);
-  } else {
-    sheet.clear(); // Clear existing content to ensure a fresh start
-  }
-
-  // Set up headers
-  const headers = ['Owner Name'];
-  const headerRange = sheet.getRange(1, 1);
-  headerRange.setValue(headers[0])
-             .setFontWeight('bold')
-             .setBackground('#e6f3ff');
-
-  // Set up owner data
-  const ownersData = [
-    ['Justin'],
-    ['PWA'],
-    ['Naokimi'],
-    ['Other']
-  ];
-
-  if (ownersData.length > 0) {
-    sheet.getRange(2, 1, ownersData.length, 1).setValues(ownersData);
-  }
-
-  sheet.autoResizeColumn(1);
-  sheet.setFrozenRows(1);
-  console.log('Owners sheet initialized.');
-}
-
-/**
  * Recreates the "Project Tracking" sheet with a predefined structure and data.
  */
 function recreateProjectTrackingSheet() {
