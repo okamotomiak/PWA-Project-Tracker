@@ -63,25 +63,28 @@ function sendReminders() {
     }
     projectsByOwner[owner].push({
       project: row[0], // Project Name from column A
+      dueDate: row[2], // Due Date from column C
       status: row[6]   // Status from column G
     });
   });
 
   let remindersSentCount = 0;
+  const sheetLink = ss.getUrl() + '#gid=' + projectSheet.getSheetId();
   Object.keys(projectsByOwner).forEach(function(owner) {
     const info = ownersMap[owner];
     if (!info || !info.email) {
       console.log('Skipping reminder for ' + owner + ' due to missing email.');
       return; // Skip this owner if no email is listed
     }
-    
+
     const projects = projectsByOwner[owner];
     let body = 'Hello ' + (info.firstName || owner) + ',\n\nHere is the current status of your projects:\n';
     projects.forEach(function(p) {
-      body += '- ' + p.project + ': ' + p.status + '\n';
+      const due = p.dueDate ? Utilities.formatDate(new Date(p.dueDate), ss.getSpreadsheetTimeZone(), 'MM/dd/yyyy') : 'No due date';
+      body += '- ' + p.project + ' (Due: ' + due + '): ' + p.status + '\n';
     });
-    body += '\nRegards,\nProject Tracker';
-    
+    body += '\nCheck project sheet for more details:\n' + sheetLink + '\n\nRegards,\nProject Tracker';
+
     const subject = 'Project Status Reminder';
     MailApp.sendEmail(info.email, subject, body);
     remindersSentCount++;

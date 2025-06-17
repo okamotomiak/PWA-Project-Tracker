@@ -9,6 +9,7 @@ function onOpen() {
     .addItem('Add New Project', 'openAddProjectDialog')
     .addItem('Send Reminders', 'sendReminders')
     .addItem('Initialize Sheets', 'initializeAllSheets')
+    .addItem('Quick Guide', 'openQuickGuide')
     .addToUi();
 
   // Ensure the Owners sheet exists
@@ -21,8 +22,16 @@ function openAddProjectDialog() {
     .setWidth(600)
     .setHeight(700)
     .setTitle('Add New Project');
-  
+
   SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Add New Project');
+}
+
+function openQuickGuide() {
+  const htmlOutput = HtmlService.createHtmlOutputFromFile('QuickGuide')
+    .setWidth(500)
+    .setHeight(400)
+    .setTitle('Quick Guide');
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Quick Guide');
 }
 
 function addNewProject(projectData) {
