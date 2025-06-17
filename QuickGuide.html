@@ -1,19 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <base target="_top">
-  <style>
-    body {font-family: Arial, sans-serif; padding: 20px;}
-    h2 {color:#1a73e8;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Tracker Quick Guide</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use the Inter font family */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
-<body>
-  <h2>Project Tracker Quick Guide</h2>
-  <ul>
-    <li><b>Add New Project</b> - open a form to add a project to the tracker.</li>
-    <li><b>Send Reminders</b> - email each owner a summary of their projects.</li>
-    <li><b>Initialize Sheets</b> - recreate sample sheets and formatting.</li>
-  </ul>
-  <p>Use the <b>Project Tracking</b> sheet for full project details.</p>
+<body class="bg-slate-100 dark:bg-slate-900 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Card container -->
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 max-w-lg w-full">
+
+        <!-- Header section with icon -->
+        <div class="flex items-center gap-4 mb-6">
+            <div class="bg-blue-100 dark:bg-blue-900/40 p-3 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">
+                Project Tracker Quick Guide
+            </h2>
+        </div>
+
+        <!-- List of actions -->
+        <ul class="space-y-4 mb-6">
+            <li class="flex items-start">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 dark:text-blue-400 mr-3 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-slate-600 dark:text-slate-300"><b class="font-semibold text-slate-700 dark:text-slate-200">Add New Project</b> - Opens a form to add a project to the tracker.</span>
+            </li>
+            <li class="flex items-start">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 dark:text-blue-400 mr-3 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                <span class="text-slate-600 dark:text-slate-300"><b class="font-semibold text-slate-700 dark:text-slate-200">Send Reminders</b> - Emails each owner a summary of their projects.</span>
+            </li>
+            <li class="flex items-start">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 dark:text-blue-400 mr-3 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-slate-600 dark:text-slate-300"><b class="font-semibold text-slate-700 dark:text-slate-200">Initialize Sheets</b> - Recreates sample sheets and formatting.</span>
+            </li>
+        </ul>
+
+        <!-- Footer note -->
+        <div class="bg-slate-100 dark:bg-slate-700/50 p-4 rounded-lg">
+            <p class="text-center text-sm text-slate-600 dark:text-slate-300">
+                Use the <b class="font-medium text-slate-800 dark:text-slate-100">Project Tracking</b> sheet for full project details.
+            </p>
+        </div>
+
+    </div>
+
 </body>
 </html>
