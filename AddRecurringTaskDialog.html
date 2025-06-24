@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Add Recurring Task</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 550px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #1a73e8;
+      margin-bottom: 25px;
+      text-align: center;
+      border-bottom: 2px solid #e8f0fe;
+      padding-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .required {
+      color: #d93025;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #dadce0;
+      border-radius: 5px;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    select {
+      cursor: pointer;
+      background-color: white;
+    }
+
+    .status-done { background-color: #e8f5e8; color: #2e7d32; }
+    .status-progress { background-color: #fff3e0; color: #ef6c00; }
+    .status-not-started { background-color: #ffebee; color: #c62828; }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    }
+
+    .btn-primary {
+      background-color: #1a73e8;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #1557b0;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(26, 115, 232, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: #dadce0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background-color: #bdc1c6;
+    }
+
+    .error-message {
+      background-color: #fce8e6;
+      color: #d93025;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+      border-left: 4px solid #d93025;
+    }
+
+    .success-message {
+      background-color: #e6f4ea;
+      color: #137333;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+      border-left: 4px solid #137333;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a73e8;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+    }
+
+    .form-col {
+      flex: 1;
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Add Recurring Task</h2>
+
+    <div id="errorMessage" class="error-message"></div>
+    <div id="successMessage" class="success-message"></div>
+
+    <form id="taskForm">
+      <div class="form-group">
+        <label for="taskName">Task Name <span class="required">*</span></label>
+        <input type="text" id="taskName" name="taskName" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <label for="frequency">Frequency <span class="required">*</span></label>
+            <select id="frequency" name="frequency" required>
+              <option value="">Select Frequency</option>
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Quarterly">Quarterly</option>
+              <option value="Yearly">Yearly</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <label for="dayPattern">Day/Pattern</label>
+            <input type="text" id="dayPattern" name="dayPattern" placeholder="e.g., Monday or 1st of month">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <label for="nextDueDate">Next Due Date</label>
+            <input type="date" id="nextDueDate" name="nextDueDate">
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <label for="lastCompletedDate">Last Completed Date</label>
+            <input type="date" id="lastCompletedDate" name="lastCompletedDate">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <label for="owner">Owner <span class="required">*</span></label>
+            <select id="owner" name="owner" required>
+              <option value="">Select Owner</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-col">
+          <div class="form-group">
+            <label for="status">Status <span class="required">*</span></label>
+            <select id="status" name="status" required>
+              <option value="">Select Status</option>
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" placeholder="Additional notes or comments (optional)"></textarea>
+      </div>
+
+      <div class="button-group">
+        <button type="button" class="btn-secondary" onclick="closeDialog()">Cancel</button>
+        <button type="submit" class="btn-primary">Add Task</button>
+      </div>
+    </form>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Adding task...</p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('taskForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      submitTask();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      google.script.run.withSuccessHandler(function(options) {
+        const ownerSelect = document.getElementById('owner');
+        if (options && options.owners) {
+          options.owners.forEach(function(name) {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            ownerSelect.appendChild(opt);
+          });
+        }
+      }).getDropdownOptions();
+    });
+
+    document.getElementById('status').addEventListener('change', function() {
+      const select = this;
+      select.className = '';
+      if (this.value === 'Done') select.className = 'status-done';
+      else if (this.value === 'In Progress') select.className = 'status-progress';
+      else if (this.value === 'Not Started') select.className = 'status-not-started';
+    });
+
+    function submitTask() {
+      hideMessages();
+
+      const formData = new FormData(document.getElementById('taskForm'));
+      const taskData = {
+        taskName: formData.get('taskName'),
+        frequency: formData.get('frequency'),
+        dayPattern: formData.get('dayPattern'),
+        nextDueDate: formData.get('nextDueDate'),
+        owner: formData.get('owner'),
+        status: formData.get('status'),
+        lastCompletedDate: formData.get('lastCompletedDate'),
+        notes: formData.get('notes')
+      };
+
+      showLoading(true);
+
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onError)
+        .addRecurringTask(taskData);
+    }
+
+    function onSuccess(result) {
+      showLoading(false);
+
+      if (result.success) {
+        showSuccessMessage(result.message);
+        document.getElementById('taskForm').reset();
+        document.getElementById('status').className = '';
+        setTimeout(function() { closeDialog(); }, 2000);
+      } else {
+        showErrorMessage(result.message);
+      }
+    }
+
+    function onError(error) {
+      showLoading(false);
+      showErrorMessage('An error occurred: ' + error.toString());
+    }
+
+    function showLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+      document.getElementById('taskForm').style.display = show ? 'none' : 'block';
+    }
+
+    function showErrorMessage(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+
+    function showSuccessMessage(message) {
+      const successDiv = document.getElementById('successMessage');
+      successDiv.textContent = message;
+      successDiv.style.display = 'block';
+    }
+
+    function hideMessages() {
+      document.getElementById('errorMessage').style.display = 'none';
+      document.getElementById('successMessage').style.display = 'none';
+    }
+
+    function closeDialog() {
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>

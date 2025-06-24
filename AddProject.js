@@ -7,6 +7,7 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Project Management')
     .addItem('Add New Project', 'openAddProjectDialog')
+    .addItem('Add Recurring Task', 'openAddRecurringTaskDialog')
     .addItem('Send Reminders', 'sendReminders')
     .addItem('Initialize Sheets', 'initializeAllSheets')
     .addItem('Quick Guide', 'openQuickGuide')
@@ -25,6 +26,15 @@ function openAddProjectDialog() {
 
   SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Add New Project');
 }
+
+function openAddRecurringTaskDialog() {
+  const htmlOutput = HtmlService.createHtmlOutputFromFile("AddRecurringTaskDialog")
+    .setWidth(600)
+    .setHeight(700)
+    .setTitle("Add Recurring Task");
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, "Add Recurring Task");
+}
+
 
 function openQuickGuide() {
   const htmlOutput = HtmlService.createHtmlOutputFromFile('QuickGuide')
@@ -140,6 +150,57 @@ function formatNewProjectRow(sheet, rowNumber, priority, status) {
   // Set row height for better readability
   sheet.setRowHeight(rowNumber, 60);
 }
+function addRecurringTask(taskData) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = spreadsheet.getSheetByName("Recurring Tasks");
+    if (!sheet) {
+      sheet = spreadsheet.insertSheet("Recurring Tasks");
+    }
+    const lastRow = sheet.getLastRow();
+    const newRow = lastRow + 1;
+    const rowData = [
+      taskData.taskName,
+      taskData.frequency,
+      taskData.dayPattern,
+      taskData.nextDueDate ? new Date(taskData.nextDueDate) : ""
+      taskData.owner,
+      taskData.status,
+      taskData.lastCompletedDate ? new Date(taskData.lastCompletedDate) : ""
+      taskData.notes
+    ];
+    sheet.getRange(newRow,1,1,rowData.length).setValues([rowData]);
+    formatNewRecurringTaskRow(sheet,newRow,taskData.status);
+    sheet.autoResizeColumns(1,8);
+    return {success:true,message:"Recurring task added successfully!",rowNumber:newRow};
+  } catch (error) {
+    console.error("Error adding recurring task:", error);
+    return {success:false,message:"Error adding recurring task: " + error.toString()};
+  }
+}
+
+function formatNewRecurringTaskRow(sheet,rowNumber,status){
+  const statusCell = sheet.getRange(rowNumber,6);
+  switch(status){
+    case "Done":
+      statusCell.setBackground("#e8f5e8").setFontColor("#2e7d32");
+      break;
+    case "In Progress":
+      statusCell.setBackground("#fff3e0").setFontColor("#ef6c00");
+      break;
+    case "Not Started":
+      statusCell.setBackground("#ffebee").setFontColor("#c62828");
+      break;
+  }
+  try{
+    sheet.getRange(rowNumber,4).setNumberFormat("m/d/yyyy");
+    sheet.getRange(rowNumber,7).setNumberFormat("m/d/yyyy");
+  }catch(e){}
+  sheet.getRange(rowNumber,8).setWrap(true);
+  sheet.getRange(rowNumber,1,1,8).setBorder(true,true,true,true,true,true);
+  sheet.setRowHeight(rowNumber,40);
+}
+
 
 function getDropdownOptions() {
   // Fetch dropdown options for the form
