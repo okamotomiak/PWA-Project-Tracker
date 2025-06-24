@@ -256,3 +256,117 @@ function applyDataValidations(sheet, sheetType) {
     sheet.getRange(2, 6, maxRows - 1, 1).setDataValidation(statusRule);
   }
 }
+
+/**
+ * Simple onEdit trigger to update the "Next Due Date" column when the
+ * "Last Completed Date" is edited in the Recurring Tasks sheet.
+ * @param {GoogleAppsScript.Events.SheetsOnEdit} e The onEdit event object.
+ */
+function onEdit(e) {
+  const range = e.range;
+  const sheet = range.getSheet();
+  if (sheet.getName() !== 'Recurring Tasks' || range.getColumn() !== 7 || range.getRow() < 2) {
+    return;
+  }
+
+  const lastCompleted = range.getValue();
+  const frequency = sheet.getRange(range.getRow(), 2).getValue();
+  const pattern = sheet.getRange(range.getRow(), 3).getValue();
+  const nextDue = calculateNextDueDate(new Date(lastCompleted), frequency, pattern);
+
+  if (nextDue) {
+    sheet.getRange(range.getRow(), 4).setValue(nextDue);
+  }
+}
+
+/**
+ * Calculate the next due date for a recurring task.
+ * @param {Date} lastDate The last completed date.
+ * @param {string} frequency The recurrence frequency (Weekly, Monthly).
+ * @param {string} pattern The day or pattern (e.g. "Monday" or "3rd Thursday").
+ * @return {Date|null} The calculated next due date or null if it cannot be determined.
+ */
+function calculateNextDueDate(lastDate, frequency, pattern) {
+  if (!lastDate || isNaN(lastDate) || !frequency) return null;
+  frequency = String(frequency).toLowerCase();
+  if (frequency === 'weekly') {
+    return getNextWeeklyDate(lastDate, pattern);
+  }
+  if (frequency === 'monthly') {
+    return getNextMonthlyDate(lastDate, pattern);
+  }
+  return null;
+}
+
+function getNextWeeklyDate(lastDate, dayStr) {
+  if (!dayStr) return null;
+  const dayNames = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+  const target = dayNames[String(dayStr).toLowerCase()];
+  if (target === undefined) return null;
+  const start = new Date(lastDate);
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    if (d.getDay() === target) return d;
+  }
+  return null;
+}
+
+function getNextMonthlyDate(lastDate, patternStr) {
+  if (!patternStr) return null;
+  const pattern = parseMonthlyPattern(patternStr);
+  if (!pattern) return null;
+  let year = lastDate.getFullYear();
+  let month = lastDate.getMonth();
+  for (let i = 0; i < 12; i++) {
+    const d = computeDateForMonth(year, month, pattern);
+    if (d && d > lastDate) return d;
+    month++;
+    if (month > 11) {
+      month = 0;
+      year++;
+    }
+  }
+  return null;
+}
+
+function parseMonthlyPattern(pattern) {
+  pattern = String(pattern).toLowerCase().trim();
+  const dayNames = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+  const ordMap = { '1st': 1, first: 1, '2nd': 2, second: 2, '3rd': 3, third: 3, '4th': 4, fourth: 4, last: 'last' };
+
+  const m = pattern.match(/^(\d{1,2})(?:st|nd|rd|th)?$/);
+  if (m) {
+    const day = parseInt(m[1], 10);
+    if (day >= 1 && day <= 31) return { type: 'dayOfMonth', day: day };
+  }
+
+  const parts = pattern.split(/\s+/);
+  if (parts.length === 2 && ordMap[parts[0]] && dayNames[parts[1]]) {
+    return { type: 'weekdayOfMonth', ordinal: ordMap[parts[0]], weekday: dayNames[parts[1]] };
+  }
+  if (parts.length === 2 && parts[0] === 'last' && dayNames[parts[1]]) {
+    return { type: 'weekdayOfMonth', ordinal: 'last', weekday: dayNames[parts[1]] };
+  }
+  return null;
+}
+
+function computeDateForMonth(year, month, p) {
+  if (p.type === 'dayOfMonth') {
+    const d = new Date(year, month, p.day);
+    return d.getMonth() === month ? d : null;
+  }
+  if (p.type === 'weekdayOfMonth') {
+    if (p.ordinal === 'last') {
+      let d = new Date(year, month + 1, 0);
+      while (d.getDay() !== p.weekday) d.setDate(d.getDate() - 1);
+      return d;
+    } else {
+      let d = new Date(year, month, 1);
+      while (d.getDay() !== p.weekday) d.setDate(d.getDate() + 1);
+      d.setDate(d.getDate() + (p.ordinal - 1) * 7);
+      return d.getMonth() === month ? d : null;
+    }
+  }
+  return null;
+}
