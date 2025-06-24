@@ -6,11 +6,11 @@ function onOpen() {
   // Add a custom menu to the spreadsheet
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Project Management')
-    .addItem('Add New Project', 'openAddProjectDialog')
-    .addItem('Add Recurring Task', 'openAddRecurringTaskDialog')
-    .addItem('Send Reminders', 'sendReminders')
-    .addItem('Initialize Sheets', 'initializeAllSheets')
-    .addItem('Quick Guide', 'openQuickGuide')
+    .addItem('➕ Add New Project', 'openAddProjectDialog')
+    .addItem('🔁 Add Recurring Task', 'openAddRecurringTaskDialog')
+    .addItem('📧 Send Reminders', 'sendReminders')
+    .addItem('📄 Initialize Sheets', 'initializeAllSheets')
+    .addItem('📖 Quick Guide', 'openQuickGuide')
     .addToUi();
 
   // Ensure the Owners sheet exists
