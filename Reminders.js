@@ -39,6 +39,7 @@ function sendReminders() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const projectSheet = ss.getSheetByName('Project Tracking');
   const ownersSheet = ss.getSheetByName('Owners');
+  const tasksSheet = ss.getSheetByName('Recurring Tasks');
   if (!projectSheet || !ownersSheet) {
     SpreadsheetApp.getUi().alert('Required sheets not found. Please run the initialization script.');
     return;
@@ -68,21 +69,54 @@ function sendReminders() {
     });
   });
 
+  const tasksByOwner = {};
+  if (tasksSheet) {
+    const tasksData = tasksSheet.getRange(2, 1, tasksSheet.getLastRow() - 1, 8).getValues();
+    tasksData.forEach(function(row) {
+      const owner = row[4]; // Owner column E
+      if (!owner) return;
+      if (!tasksByOwner[owner]) {
+        tasksByOwner[owner] = [];
+      }
+      tasksByOwner[owner].push({
+        task: row[0], // Task Name
+        nextDue: row[3], // Next Due Date
+        status: row[5] // Status
+      });
+    });
+  }
+
   let remindersSentCount = 0;
   const sheetLink = ss.getUrl() + '#gid=' + projectSheet.getSheetId();
-  Object.keys(projectsByOwner).forEach(function(owner) {
+  const allOwners = new Set([...Object.keys(projectsByOwner), ...Object.keys(tasksByOwner)]);
+  allOwners.forEach(function(owner) {
     const info = ownersMap[owner];
     if (!info || !info.email) {
       console.log('Skipping reminder for ' + owner + ' due to missing email.');
       return; // Skip this owner if no email is listed
     }
 
-    const projects = projectsByOwner[owner];
-    let body = 'Hello ' + (info.firstName || owner) + ',\n\nHere is the current status of your projects:\n';
-    projects.forEach(function(p) {
-      const due = p.dueDate ? Utilities.formatDate(new Date(p.dueDate), ss.getSpreadsheetTimeZone(), 'MM/dd/yyyy') : 'No due date';
-      body += '- ' + p.project + ' (Due: ' + due + '): ' + p.status + '\n';
-    });
+    const projects = projectsByOwner[owner] || [];
+    const tasks = tasksByOwner[owner] || [];
+
+    let body = 'Hello ' + (info.firstName || owner) + ',\n\n';
+    if (projects.length > 0) {
+      body += 'Here is the current status of your projects:\n';
+      projects.forEach(function(p) {
+        const due = p.dueDate ? Utilities.formatDate(new Date(p.dueDate), ss.getSpreadsheetTimeZone(), 'MM/dd/yyyy') : 'No due date';
+        body += '- ' + p.project + ' (Due: ' + due + '): ' + p.status + '\n';
+      });
+    }
+
+    if (tasks.length > 0) {
+      if (projects.length > 0) body += '\n';
+      body += 'Recurring tasks:\n';
+      tasks.forEach(function(t) {
+        const due = t.nextDue ? Utilities.formatDate(new Date(t.nextDue), ss.getSpreadsheetTimeZone(), 'MM/dd/yyyy') : 'No due date';
+        body += '- ' + t.task + ' (Next Due: ' + due + '): ' + t.status + '\n';
+      });
+    }
+
     body += '\nCheck project sheet for more details:\n' + sheetLink + '\n\nRegards,\nProject Tracker';
 
     const subject = 'Project Status Reminder';
