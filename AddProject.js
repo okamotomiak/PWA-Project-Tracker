@@ -159,14 +159,14 @@ function addRecurringTask(taskData) {
     }
     const lastRow = sheet.getLastRow();
     const newRow = lastRow + 1;
-    const rowData = [
+const rowData = [
       taskData.taskName,
       taskData.frequency,
       taskData.dayPattern,
-      taskData.nextDueDate ? new Date(taskData.nextDueDate) : ""
+      taskData.nextDueDate ? new Date(taskData.nextDueDate) : "", // Added comma
       taskData.owner,
       taskData.status,
-      taskData.lastCompletedDate ? new Date(taskData.lastCompletedDate) : ""
+      taskData.lastCompletedDate ? new Date(taskData.lastCompletedDate) : "", // Added comma
       taskData.notes
     ];
     sheet.getRange(newRow,1,1,rowData.length).setValues([rowData]);
