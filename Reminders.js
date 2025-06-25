@@ -97,19 +97,28 @@ function sendReminders() {
     }
 
     const projects = projectsByOwner[owner] || [];
+    // Exclude projects marked as Done
+    const activeProjects = projects.filter(function(p) {
+      return String(p.status).toLowerCase() !== 'done';
+    });
+    // Skip sending if owner has no active projects
+    if (activeProjects.length === 0) {
+      console.log('Skipping reminder for ' + owner + ' due to no active projects.');
+      return;
+    }
     const tasks = tasksByOwner[owner] || [];
 
     let body = 'Hello ' + (info.firstName || owner) + ',\n\n';
-    if (projects.length > 0) {
+    if (activeProjects.length > 0) {
       body += 'Here is the current status of your projects:\n';
-      projects.forEach(function(p) {
+      activeProjects.forEach(function(p) {
         const due = p.dueDate ? Utilities.formatDate(new Date(p.dueDate), ss.getSpreadsheetTimeZone(), 'MM/dd/yyyy') : 'No due date';
         body += '- ' + p.project + ' (Due: ' + due + '): ' + p.status + '\n';
       });
     }
 
     if (tasks.length > 0) {
-      if (projects.length > 0) body += '\n';
+      if (activeProjects.length > 0) body += '\n';
       body += 'Recurring tasks:\n';
       tasks.forEach(function(t) {
         const due = t.nextDue ? Utilities.formatDate(new Date(t.nextDue), ss.getSpreadsheetTimeZone(), 'MM/dd/yyyy') : 'No due date';
